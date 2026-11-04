@@ -98,6 +98,16 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
 - Activate the `deploying-to-cloud` skill whenever deploying to Laravel Cloud, configuring Cloud environments or resources, using the Cloud CLI, or troubleshooting Cloud deployments.
 
+=== tests rules ===
+
+# Test Enforcement
+
+- Add or update tests for behavior and logic changes when a test provides meaningful regression coverage.
+- Pure copy, styling, and layout-only changes do not require new or updated tests.
+- When test coverage applies, run the affected tests and ensure they pass.
+- Test the changed behavior and its important failure modes, but do not add tests beyond them.
+- Read the `testing-best-practices` skill before writing tests.
+
 === laravel/core rules ===
 
 # Do Things the Laravel Way
@@ -146,3 +156,20 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Run `vendor/bin/phpunit` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
 
 </laravel-boost-guidelines>
+
+# Project Conventions
+
+## Test-Driven Development
+
+- For application behavior and schema changes, follow Red -> Green -> Refactor: write a focused failing test, run it to confirm the expected failure, implement the smallest change that passes, then refactor while keeping the test passing.
+- Use the existing PHPUnit feature tests and model factories. Run affected tests with `php artisan test --compact` and a file path or filter; broaden coverage when shared schema or authentication changes warrant it.
+- Database tests must use the dedicated `mysql_test` connection configured in [phpunit.xml](./phpunit.xml), never the application database. Preserve the test connection's InnoDB engine so transactions isolate test data.
+- Use `LazilyRefreshDatabase` for ordinary database feature tests and `DatabaseMigrations` for schema-changing migration tests, since MySQL DDL can implicitly commit transactions.
+
+## UUID Primary Keys
+
+- Use UUIDv7 primary keys named `id` for application entities. Follow the [User model](./app/Models/User.php): use Laravel's `HasUuids` trait and define new primary-key columns with `$table->uuid('id')->primary()`.
+- Use matching `foreignUuid` columns and `uuidMorphs` relationships for UUID owners. Preserve existing nullability, indexes, and relationship behavior when changing reference columns.
+- Keep framework-managed keys, such as queue job IDs, session IDs, cache keys, and Sanctum token primary keys, in their framework-supported formats. References to UUID application entities must still use UUID-compatible columns.
+- Preserve existing shared migration history and add new migrations for schema changes. Populated databases need an explicit ID mapping and reference backfill; do not bypass the UUID conversion guards or reset the application database with `migrate:fresh`.
+- Cover automatic UUID generation, uniqueness, persistence, affected relationships, and important migration failure modes through feature tests before implementation.
