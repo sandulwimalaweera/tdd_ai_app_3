@@ -2,7 +2,7 @@
 
 These settings apply to the project and CI, not to individual tests. Read `rules/isolation.md` for choices within a test.
 
-Fetch the PHPUnit 12.5.43 documentation at `https://phpunit.de/documentation.html` for PHPUnit options that make test runs faster.
+Fetch `https://pestphp.com/docs/optimizing-tests` for Pest options that make test runs faster.
 Verify each flag in the documentation before adding it to CI.
 
 Measure before changing a setting. Find the slow test first, and apply a project-wide setting only after identifying the costly work.
@@ -17,7 +17,7 @@ Measure before changing a setting. Find the slow test first, and apply a project
 
 ## Global fakes
 
-Put these three calls in the `setUp()` of the base `TestCase` of the project:
+Put these three calls in the base `Pest.php` of the project:
 
 - `Http::preventStrayRequests()`, because one request that reaches the network can slow the suite. It catches requests that go through Laravel's HTTP client. Check direct Guzzle and cURL usage separately.
 - `Sleep::fake(syncWithCarbon: true)`, so a retry and a backoff do not sleep.
@@ -25,7 +25,7 @@ Put these three calls in the `setUp()` of the base `TestCase` of the project:
 
 ## How to run the suite in parallel
 
-Run `php artisan test --parallel`, which uses ParaTest, to spread tests across the machine's CPU cores. If the default count does not suit the machine or CI, add `--processes=N`.
+Run `vendor/bin/pest --parallel` to spread tests across the machine's CPU cores. If the default count does not suit the machine or CI, add `--processes=N`.
 
 A parallel run gives each process a separate database. Each test must meet the conditions below. A test that fails only in parallel breaks one of them.
 
@@ -35,7 +35,7 @@ A parallel run gives each process a separate database. Each test must meet the c
 
 ## How to find a slow test
 
-Run `php artisan test --profile` to list the slowest tests. Start with the ten slowest tests, because the same cause often applies to the complete suite.
+Run `vendor/bin/pest --profile` to list the slowest tests. Start with the ten slowest tests, because the same cause often applies to the complete suite.
 
 If the cause of a slow test is unclear, add an event listener or temporary log entry to identify the work the test does.
 

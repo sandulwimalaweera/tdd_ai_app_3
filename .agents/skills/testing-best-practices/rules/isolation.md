@@ -15,7 +15,7 @@ Identify the dependency, then choose the first option that applies. A framework 
 
 ## Framework fakes
 
-- Create each fake inside the test method that needs it. Do not create fakes in `setUp()`.
+- Create each fake inside the test that needs it. Do not create fakes in a file-level `beforeEach()`.
 - Pass class names to `Event::fake()` and `Queue::fake()` when you know which classes the code dispatches. A fake without class names can hide an unexpected dispatch.
 - Use a fake without class names only when the test asserts the complete result, including a call to `assertNothingPushed()`.
 - Write one assertion for each fake. The assertion states that the code dispatches the item, or that the code does not dispatch the item.
@@ -28,7 +28,7 @@ Create prerequisite factory records before calling `Event::fake()`. Factories us
 
 Use `shouldReceive()` before the action to declare an expectation. Use `shouldHaveReceived()` after the action for a spy. If an equality check cannot state the expected argument, such as a check of one field of a value object, use `Mockery::on()` or `withArgs()`.
 
-Use `$this->mock(Contract::class)` to put a mock in the container. Do not build a PHPUnit mock for a class that Mockery can double, because the project uses Mockery.
+Import the mock function before you use it: `use function Pest\Laravel\mock;`.
 
 ## Outbound HTTP testing
 
@@ -39,7 +39,7 @@ Fake the exact endpoint that each test calls. Do not call `Http::fake()` without
 ## Time and randomness
 
 - Freeze the time or move the time in each test that depends on a date, a period, or a timestamp.
-- Use the framework helpers `$this->freezeTime()`, `$this->travelTo()`, `$this->travel()`, and `$this->travelBack()`. Do not call `Carbon::setTestNow()`.
+- Use the framework helpers `freezeTime()`, `travelTo()`, `travel()`, and `travelBack()`. Do not call `Carbon::setTestNow()`.
 - If the test asserts an identifier or a slug, use `Str::createRandomStringsUsing()` to fix the generated string.
 - Use `Sleep::fake()` instead of a real sleep, and assert the sleeps that the code requests.
 - If the suite does not restore the time and the randomness for every test, restore them after each test.
