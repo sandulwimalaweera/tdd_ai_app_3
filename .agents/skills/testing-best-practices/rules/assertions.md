@@ -11,7 +11,7 @@ Keep each test self-contained. Do not use values created by another test.
 First identify the subject of the check, then find an assertion designed for it. A subject-specific assertion identifies the incorrect value when the test fails.
 
 1. Search Laravel's assertions for framework subjects such as responses, the database, sessions, models, queues, events, mail, and notifications.
-2. Fetch the PHPUnit 12.5.43 documentation at `https://phpunit.de/documentation.html` for the assertions of PHPUnit for a plain value, a type, a format, or a shape.
+2. Fetch `https://pestphp.com/docs/expectations.md` for the expectations of Pest for a plain value, a type, a format, or a shape.
 3. Build the check by hand only if no assertion exists for the subject.
 4. Confirm the name in the documentation before you use it. Do not write an assertion that you did not confirm.
 
@@ -19,12 +19,12 @@ Use the assertion in this table for each subject.
 
 | Subject | Assertion to use |
 | --- | --- |
-| A return value, the state of an object, or a transformation of a value | `assertSame()`, or the assertion for the type |
+| A return value, the state of an object, or a transformation of a value | an `expect()` chain |
 | An HTTP status, JSON, a session, or Inertia | a Laravel response assertion |
 | The state in the database | a Laravel database assertion |
 | The existence of a model | `assertModelExists($model)` rather than `assertDatabaseHas('users', ['id' => $user->id])` |
 
-Use `assertSame()` and not `assertEquals()`, because `assertSame()` also compares the type.
+Use a PHPUnit assertion only if no Pest expectation and no Laravel assertion exists for the subject.
 
 Assert each fact once, but status and content are separate facts. `assertSee` passes on an error page that contains the text, so keep `assertOk()` alongside it when the status is part of the behavior.
 
@@ -32,7 +32,7 @@ Assert each fact once, but status and content are separate facts. `assertSee` pa
 
 Use a named response assertion, such as `assertNotFound()`, rather than `assertStatus(404)`. A failure then identifies the broken contract. Laravel provides named assertions for commonly tested status codes.
 
-Group the assertions for one subject together. Start a new group when the subject changes.
+Keep one `expect()` chain on one subject. Start a new chain when the subject changes, or when the chain is difficult to read.
 
 ## Assert a known value
 
@@ -41,11 +41,11 @@ Write the expected value in the test, or calculate the expected value by a diffe
 ```php
 // The test calculates the value with the logic of the implementation...
 $expected = now()->subHours(24)->floorSeconds(30)->toJson();
-$this->assertSame($expected, $from);
+expect($from)->toBe($expected);
 
 // The test sets a fixed input and asserts a known value...
-$this->travelTo('2025-01-01 00:00:00');
-$this->assertSame('2024-12-31T00:00:00.000000Z', $from);
+travelTo('2025-01-01 00:00:00');
+expect($from)->toBe('2024-12-31T00:00:00.000000Z');
 ```
 
 ## Assert the complete result
